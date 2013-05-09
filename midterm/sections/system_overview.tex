@@ -1,0 +1,19 @@
+\subsection{System Overview}
+
+The system is combined with serveral parts:
+
+\begin{enumerate}
+
+\item[(I)] the master server
+
+\item[(II)] the client browsers
+
+%\item[(III)] the client servers
+
+%For both (I) and (III) we use node.js as its basic infrastructure.
+For (I) we use node.js as its basic infrastructure.
+
+For (II), though Socket.io and SockJS can give a unified interface among WebSocket enabled/disabled browsers, only WebSocket enabled browsers are allowed to use the system.
+Thus, the connection for MapReduce algorithm flow between (I) and (II) is done via HTML5 WebSocket API.
+
+\end{enumerate}

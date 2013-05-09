@@ -1,0 +1,13 @@
+\subsection{Part II: Browser Clients}
+
+After recieving web content from the server (or, with another word, the user visits the website hosted on the server) the user can register to the server to wait for coming tasks.
+
+The register action builds WebSocket connection between browser and server, and the server will add the browser to one of its vailable client; the action will also create a WebWorker object (a.k.a. worker thread for below) that is initially pending.
+
+When the browser recieves split data, map function and reduce function, it starts to execute mapper function on the worker thread, split data as the input.
+
+After the mapper terminates it produces an array containing many key-value objects. The worker thread uploads the array via WebSocket.
+
+When the upload process is done, it starts to execute the reduce function by wrapping a callback over it: only when a key-value data is sent from server will the callback be called and the reducer be executed, key-value data as the input.
+
+When the browser recieves the \emph{END} signal instead of data from the server, the worker thread should terminates the callback wrapper and starts to upload the final result.
