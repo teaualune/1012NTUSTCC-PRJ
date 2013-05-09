@@ -33,3 +33,6 @@
 *.vrb
 *.xdy
 *.tdo
+
+# temp PDF output
+*.fls

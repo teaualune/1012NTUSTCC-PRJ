@@ -1,0 +1,10 @@
+\section{Project Description}
+\label{ch3}
+
+This library runs a program using MapReduce programming model on the server and dispatch mapper/reducer tasks to many registered client browsers program.
+
+To register, clients visit a site hosted by the server and accept worker permissions. Javascripts of the site will create several HTML5 workers. They will be mappers or reducers (a browser client may has mapper and reducer workers concurrently), waiting for dispatching tasks and data from the server. Upon receiving works, the workers become active, execute the map/reduce works, return results back after finsihing execution repeatly.
+
+Different from traditional MapReduce model, we can’t communicate between browsers since the standard of communication between browsers is not popular in this time, so the the intermediate result done by map workers will be report to theserver, and then shuffle these intermediate results to the reduce workers.
+
+Also there will be an API for node.js that provides adapters connecting server-side javascripts and node.js computing environment. Eventually the server can also dispatch tasks to node.js servers, i.e. treating node.js as a powerful MapReduce computing nodes.
