@@ -1,8 +1,8 @@
 \section{Motivation}
 \label{ch2}
 
-MapReduce provides a distributed way for processing large-scale data. In traditional MapReduce implementations, a server node dispatches data and tasks to various client nodes and collect results after mapper and reducer functions are done by clients. Both server and client need efforts to configure connection and execution environment for MapReduce programs.
+MapReduce\cite{mapreduce} provides a distributed way for processing large-scale data. In traditional MapReduce implementations, a server node dispatches data and tasks to various client nodes and collect results after mapper and reducer functions are done by clients. Both server and client need efforts to configure connection and execution environment for MapReduce programs.
 
 In order to get many clients in a more convenient way, we introduce a new kind of MapReduce client, i.e. browsers. In the initial scheme, researchers who need more computing resources do not necessary set up lots of clients; instead, they can use a HTTP server that establishes connection with clients visit the researchers’ website (server).
 Data, mappers and reducers can therefore dispatch to those browsers and execute. To support a research, a resource provider only need to keep a browser opened and connected to the server.
-And in the future, we can extend the functionality more by enabling other node.js applications to become clients; thus researchers who are doubt for the speed of browser computing can set up client machines with node.js and libraries we provided.
+And in the future, we can extend the functionality more by enabling other node.js\cite{nodejs} applications to become clients; thus researchers who are doubt for the speed of browser computing can set up client machines with node.js and libraries we provided.

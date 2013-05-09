@@ -4,7 +4,7 @@ After recieving web content from the server (or, with another word, the user vis
 
 The register action builds WebSocket connection between browser and server, and the server will add the browser to one of its vailable client; the action will also create a WebWorker object (a.k.a. worker thread for below) that is initially pending.
 
-When the browser recieves split data, map function and reduce function, it starts to execute mapper function on the worker thread, split data as the input.
+When the browser recieves the split data, map function and reduce function, it starts to execute mapper function on the worker thread, split data as the input.
 
 After the mapper terminates it produces an array containing many key-value objects. The worker thread uploads the array via WebSocket.
 
