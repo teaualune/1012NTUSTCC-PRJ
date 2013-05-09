@@ -1,0 +1,22 @@
+\subsection{Refinements}
+
+\begin{itemize}
+
+\item Key-to-Reducer Bucketing\\
+The key-value data produced by the mapper should be delievered correctly to the reducer corresponding to the key so that there will be no data with identical key that is delievered to different reducer. To ensure the consistency a bucketing algorithm is used on master server while re-dispatching data to reducers.
+
+The bucketing strategy must first ensure the consistency, and then try to amortize the number of responsible keys for each reducer, due to the load balancing objective.
+
+\item Fault Tolerance\\
+It is quite common that clients are disconnected from the server in our design. Although we choose WebSocket as the way of task dispatching, it resides under the webpage within the browser - or, more specifically - a tab of the browser; once the tab is closed by the user or other reasons like browser crash (which is sometimes unevitable since some browsers e.g. Safari clears contents of every tabs if it faces memory-insufficient states), the WebSocket and Web Workers fail altogether.
+
+\item Mapper Streaming\\
+In the implementation above the mapper sends output data after the whole map function process terminates. But this produces two problems: first, the output data is relatively big for master server to do a “transfer” task between mappers and reducers; second, this will decrease performance since the scenario implies that master server must wait for a mapper terminates in order to retrieve its output.
+
+To leverage this disadvantage, we introduce a method trying to confront it: for a mapper in process, it periodically sends its current output to master server instead of sending all of them after whole process terminates. The idea is different, while similar in concept, with the streaming technique.
+
+To be more detailed, we will predefine a chunk size; when the mapper produces data that reaches the chunk size we use another thread to send the data to master server. The chunk size chosen is an important factor in our approach: too large chunk size distracts the goal that we want to confront the cons, while too small chunk size increases lots of additional connections, which is unefficient.
+
+For our implementation, we will first adopt the initial approach that sends data after the mapper terminates; and then we will use the streaming idea for refinement. There will also a comparison on performance within first approach and second approach with different chosen chunk sizes.
+
+\end{itemize}
