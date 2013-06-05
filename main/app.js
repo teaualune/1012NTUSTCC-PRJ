@@ -8,8 +8,7 @@ var express = require('express')
   , user = require('./routes/user')
   , http = require('http')
   , path = require('path')
-  , mpModule = require('./JsMPModule')
-  , expressPartials = require('express-partials');
+  , mpModule = require('./JsMPModule');
 
 var app = express();
 
@@ -23,7 +22,6 @@ app.configure(function(){
   app.use(express.methodOverride());
   app.use(app.router);
   app.use(express.static(path.join(__dirname, 'public')));
-  app.use(expressPartials());
 });
 
 app.configure('development', function(){
