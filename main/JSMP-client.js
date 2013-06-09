@@ -14,9 +14,7 @@ socket.on('MAPSTART', function (data) {
 //Mapper運作
 mapper(input, emitter);
 socket.emit('MAPDATA', mapperOutput);//Mapper回傳資料
-
-//觸發Map結束事件
-socket.emit('MAPEND');
+socket.emit('MAPEND');//觸發Map結束事件
 
 //開始Reducer
 socket.on('REDUCE', function (data) {
