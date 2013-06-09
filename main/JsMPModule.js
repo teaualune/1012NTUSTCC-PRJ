@@ -6,7 +6,8 @@
 
     var socketioModule = require('socket.io'),
         io = null,
-        clientPool = {};
+        clientPool = {},
+        running = false,
 
         /* a utility for counting size of an object. */
         size = function (obj) {
@@ -24,7 +25,8 @@
                 name: 'MAPSTART',
                 input: opts.input,
                 mapper: opts.mapper + '', // turn function to string
-                reducer: opts.reducer + ''
+                reducer: opts.reducer + '',
+                emitter: opts.emitter + ''
             };
         },
 
@@ -45,17 +47,46 @@
             return {
                 name: 'COMPLETE'
             };
+        },
+
+        fakeInput = function (n) {
+            var i = 0,
+                input = [];
+            for (i; i < n; i ++) {
+                input[i] = 'Hello World';
+            }
+            return input;
         };
 
     module.exports = {
-        start: function () {
-            console.log('MAPSTART!!');
+        start: function (config) {
+            console.log('MAPREDUCE START!!')
+            running = true;
+
+            var numClients = size(clientPool),
+                input = fakeInput(numClients),
+                i = 0;
+
+            for (client in clientPool) {
+                io.clients[client].send('MAPSTART', generateMAPSTART_DATA({
+                    input: input[i],
+                    mapper: config.mapper,
+                    reducer: config.reducer,
+                    emitter: config.emitter
+                }));
+                i ++;
+            }
+
         },
 
         setup: function (httpServer) {
             io = socketioModule.listen(httpServer);
 
             io.sockets.on('connection', function (socket) {
+
+                if (running) {
+                    return;
+                }
 
                 clientPool[socket.id] = {
                     id: socket.id

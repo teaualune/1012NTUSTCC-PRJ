@@ -8,7 +8,8 @@ var express = require('express'),
     master = require('./routes/master'),
     http = require('http'),
     path = require('path'),
-    mpModule = require('./JsMPModule');
+    mpModule = require('./JsMPModule'),
+    wordCount = require('./wordCount/wordCount');
 
 var app = express();
 
@@ -31,7 +32,7 @@ app.configure('development', function () {
 app.get('/', routes.index);
 app.get('/master', master.master);
 app.post('/master', function (req, res) {
-    mpModule.start();
+    mpModule.start(wordCount);
 }, master.start);
 
 var httpServer = http.createServer(app);
