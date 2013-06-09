@@ -7,7 +7,6 @@
     var socketioModule = require('socket.io'),
         io = null,
         clientPool = [],
-        running = false,
 
         /* a utility for counting size of an object. */
         size = function (obj) {
@@ -67,45 +66,35 @@
             }
         };
 
+
+
+    // MP variables
+    var numClients = 0,
+        input = null,
+        mapends = null,
+        gotReduces = null,
+        mapAllends = false,
+        running = false,
+        checkMapAllEnd = function () {
+            if (size(mapends) === numClients && !mapAllends) {
+                io.sockets.emit('MAP_ALL_END', generateMAP_ALL_END_DATA());
+                mapAllends = true;
+            }
+        };
+
     module.exports = {
         start: function (config) {
             console.log('MAPREDUCE START!!')
+
+            // init module-scope MP variables
             running = true;
+            numClients = size(clientPool);
+            input = fakeInput(numClients);
+            mapends = {};
+            gotReduces = {};
+            mapAllends = false;
 
-            var numClients = size(clientPool),
-                input = fakeInput(numClients),
-                i = 0,
-                mapends = 0;
-
-
-            // MAPEND
-            socket.on('MAPEND', function (data) {
-                mapends ++;
-            });
-
-            // MAPDATA
-            socket.on('MAPDATA', function (data) {
-                var mapperOutput = data.data,
-                    key = null,
-                    clientID = null;
-                for (key in mapperOutput) {
-                    if (mapperOutput.hasOwnProperty(key)) {
-                        clientID = bucket(key, clientPool).id;
-                        io.clients[clientID].send('REDUCE', generateREDUCE_DATA({
-                            input: mapperOutput[key]
-                        }));
-                    }
-                }
-            });
-
-            // GOT_REDUCE
-            socket.on('GOT_REDUCE', function (data) {});
-
-            // REDUCEEND
-            socket.on('REDUCEEND', function (data) {});
-
-            // REDUCEDATA
-            socket.on('REDUCEDATA', function (data) {});
+            var i = 0;
 
 
             for (i; i < clientPool.length; i ++) {
@@ -132,7 +121,7 @@
                 }
 
                 clientPool.push(newClient);
-                console.log(clientPool);
+
                 socket.on('disconnect', function () {
                     console.log('a connection failed');
                     var idx = clientPool.indexOf(newClient);
@@ -140,6 +129,49 @@
                         clientPool.splice(idx, 1);
                     }
                 });
+
+
+                // MAPEND
+                socket.on('MAPEND', function (data) {
+                    mapends[socket.id] = 1;
+                    if (gotReduces[socket.id].send === gotReduces[socket.id].got) {
+                        checkMapAllEnd();
+                    }
+                });
+
+                // MAPDATA
+                socket.on('MAPDATA', function (data) {
+                    var mapperOutput = data.data,
+                        key = null,
+                        clientID = null;
+
+                    gotReduces[socket.id] = {
+                        send: 0,
+                        got: 0
+                    };
+                    for (key in mapperOutput) {
+                        if (mapperOutput.hasOwnProperty(key)) {
+                            gotReduces[socket.id].send ++;
+                            clientID = bucket(key, clientPool).id;
+                            io.clients[clientID].send('REDUCE', generateREDUCE_DATA({
+                                input: mapperOutput[key]
+                            }));
+                        }
+                    }
+                });
+
+                // GOT_REDUCE
+                socket.on('GOT_REDUCE', function (data) {
+                    gotReduces[socket.id].got ++;
+                });
+
+                // REDUCEEND
+                socket.on('REDUCEEND', function (data) {});
+
+                // REDUCEDATA
+                socket.on('REDUCEDATA', function (data) {});
+
+
             });
         }
     };
