@@ -6,7 +6,7 @@
 
     var socketioModule = require('socket.io'),
         io = null,
-        clientPool = {},
+        clientPool = [],
         running = false,
 
         /* a utility for counting size of an object. */
@@ -56,6 +56,15 @@
                 input[i] = 'Hello World';
             }
             return input;
+        },
+
+        bucket = function (key, pool) { // match the key to a pool
+            // currently fake one
+            if (pool.length < 2) {
+                return pool[0];
+            } else if (key[0] > 'm') {
+                return pool[1];
+            }
         };
 
     module.exports = {
@@ -65,16 +74,47 @@
 
             var numClients = size(clientPool),
                 input = fakeInput(numClients),
-                i = 0;
+                i = 0,
+                mapends = 0;
 
-            for (client in clientPool) {
-                io.clients[client].send('MAPSTART', generateMAPSTART_DATA({
+
+            // MAPEND
+            socket.on('MAPEND', function (data) {
+                mapends ++;
+            });
+
+            // MAPDATA
+            socket.on('MAPDATA', function (data) {
+                var mapperOutput = data.data,
+                    key = null,
+                    clientID = null;
+                for (key in mapperOutput) {
+                    if (mapperOutput.hasOwnProperty(key)) {
+                        clientID = bucket(key, clientPool).id;
+                        io.clients[clientID].send('REDUCE', generateREDUCE_DATA({
+                            input: mapperOutput[key]
+                        }));
+                    }
+                }
+            });
+
+            // GOT_REDUCE
+            socket.on('GOT_REDUCE', function (data) {});
+
+            // REDUCEEND
+            socket.on('REDUCEEND', function (data) {});
+
+            // REDUCEDATA
+            socket.on('REDUCEDATA', function (data) {});
+
+
+            for (i; i < clientPool.length; i ++) {
+                io.clients[client.id].send('MAPSTART', generateMAPSTART_DATA({
                     input: input[i],
                     mapper: config.mapper,
                     reducer: config.reducer,
                     emitter: config.emitter
                 }));
-                i ++;
             }
 
         },
@@ -83,23 +123,25 @@
             io = socketioModule.listen(httpServer);
 
             io.sockets.on('connection', function (socket) {
+                var newClient = {
+                    id: socket.id
+                };
 
                 if (running) {
                     return;
                 }
 
-                clientPool[socket.id] = {
-                    id: socket.id
-                };
+                clientPool.push(newClient);
                 console.log(clientPool);
                 socket.on('disconnect', function () {
                     console.log('a connection failed');
-                    delete clientPool[socket.id];
+                    var idx = clientPool.indexOf(newClient);
+                    if (idx !== -1) {
+                        clientPool.splice(idx, 1);
+                    }
                 });
             });
-
         }
     };
-
 
 }());

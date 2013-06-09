@@ -18,6 +18,6 @@ module.exports = {
         }
     },
     emitter: function (key, value, mapperOutput) {
-        output[key] += value;
+        mapperOutput[key] += value;
     }
 };
