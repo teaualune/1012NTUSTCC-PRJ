@@ -11,4 +11,5 @@ exports.master = function (req, res) {
 
 exports.start = function (req, res) {
     console.log('start!');
+    res.send(200);
 }

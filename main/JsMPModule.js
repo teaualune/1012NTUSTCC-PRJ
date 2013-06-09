@@ -5,6 +5,7 @@
     'use strict';
 
     var socketioModule = require('socket.io'),
+        _ = require('underscore'),
         io = null,
         clientPool = [],
 
@@ -71,7 +72,9 @@
             // currently fake one
             if (pool.length < 2) {
                 return pool[0];
-            } else if (key[0] > 'm') {
+            } else if (key[0] < 'm') {
+                return pool[0];
+            } else {
                 return pool[1];
             }
         };
@@ -88,7 +91,7 @@
         running = false,
         result = {},
         checkMapAllEnd = function () {
-            if (size(mapends) === numClients && !mapAllends) {
+            if (_.size(mapends) === numClients && !mapAllends) {
                 io.sockets.emit('MAP_ALL_END', generateMAP_ALL_END_DATA());
                 mapAllends = true;
             }
@@ -100,7 +103,7 @@
 
             // init module-scope MP variables
             running = true;
-            numClients = size(clientPool);
+            numClients = _.size(clientPool);
             input = fakeInput(numClients);
             mapends = {};
             gotReduces = {};
@@ -122,7 +125,9 @@
         },
 
         setup: function (httpServer) {
-            io = socketioModule.listen(httpServer);
+            io = socketioModule.listen(httpServer, {
+                log: false
+            });
 
             io.sockets.on('connection', function (socket) {
                 var newClient = {

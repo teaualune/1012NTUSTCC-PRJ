@@ -1,4 +1,4 @@
-/*global socket */
+/*global socket, _ */
 
 var mapper = null,
     reducer = null,
@@ -6,7 +6,8 @@ var mapper = null,
     emitter = null, 
     mapperOutput = {},
     reduceOutput = {},
-    mapallend = false;
+    mapallend = false,
+    reduceEndEmitted = false;
 
 //開始MapReduce
 socket.on('MAPSTART', function (data) {
@@ -20,7 +21,9 @@ socket.on('MAPSTART', function (data) {
     socket.emit('MAPDATA', {
         data: mapperOutput
     });//Mapper回傳資料
-    socket.emit('MAPEND');//觸發Map結束事件
+    socket.emit('MAPEND', {
+        keys: _.keys(mapperOutput)
+    });//觸發Map結束事件
 });
 
 //開始Reducer
@@ -29,8 +32,9 @@ socket.on('REDUCE', function (data) {
     var reduce_input = data.input;
     reducer(reduce_input, reduceOutput); //執行reducer
 
-    if (mapallend) {
+    if (mapallend && !reduceEndEmitted) {
         socket.emit('REDUCEEND');
+        reduceEndEmitted = true;
     }
 });
 
@@ -41,6 +45,10 @@ socket.on('MAP_ALL_END', function () {
         data: reduceOutput
     }); //傳回Reducer完成的資料
     mapallend = true;
+    if (!reduceAllEndEmitted) {
+        socket.emit('REDUCEEND');
+        reduceEndEmitted = true;
+    }
 });
 
 socket.on('COMPLETE', function (data) {
