@@ -3,9 +3,13 @@
  * GET home page.
  */
 
-exports.index = function(req, res){
-  res.render('index', {
-    title: 'Express',
-    socket_io_addr: 'http://140.112.90.46:3000'
-  });
+exports.index = function (req, res) {
+    var host = req.headers.host;
+    if (host.length < 7 || !host.match(/https?:\/\//)) {
+        host = 'http://' + host;
+    }
+    res.render('index', {
+        title: 'Express',
+        socket_io_addr: host
+    });
 };

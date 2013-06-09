@@ -1,32 +1,32 @@
-/*global: module */
+/*global module, require, console */
 
 (function () {
 
     'use strict';
 
     var socketioModule = require('socket.io'),
-        io = null;
+        io = null,
 
-    /* a utility for counting size of an object. */
-    function size (obj) {
-        var count = 0, key;
-        for (key in obj) {
-            if (obj.hasOwnProperty(key)) {
-                count = count + 1;
+        /* a utility for counting size of an object. */
+        size = function (obj) {
+            var count = 0, key;
+            for (key in obj) {
+                if (obj.hasOwnProperty(key)) {
+                    count = count + 1;
+                }
             }
-        }
-        return count;
-    };
+            return count;
+        },
 
 
-    function MAPSTART_DATA (opts) {
-        return {
-            name: 'MAPSTART',
-            input: opts.input,
-            mapper: opts.mapper + '', // turn function to string
-            reducer: opts.reducer + ''
+        generateMAPSTART_DATA = function (opts) {
+            return {
+                name: 'MAPSTART',
+                input: opts.input,
+                mapper: opts.mapper + '', // turn function to string
+                reducer: opts.reducer + ''
+            };
         };
-    };
 
     module.exports = {
         test: function () {
@@ -50,8 +50,8 @@
                 });
             });
 
-        },
+        }
     };
 
 
-})();
+}());
