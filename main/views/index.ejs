@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <title>Javascript MapReduce for STCC, NTU</title>
-    <link href="stylesheets/style.css" rel="stylesheet">
-  </head>
-  <body>
-    <div class="title">
-        <%= title %>
-    </div>
-    <script src="javascripts/socket.io.min.js"></script>
-    <script>
-        var socket = io.connect('<%= socket_io_addr %>');
-        console.log(socket);
-    </script>
-  </body>
+    <head>
+        <meta charset="utf-8">
+        <title>Javascript MapReduce for STCC, NTU</title>
+        <link href="stylesheets/style.css" rel="stylesheet">
+    </head>
+    <body>
+        <div class="title">
+            <%= title %>
+        </div>
+        <script src="javascripts/socket.io.min.js"></script>
+        <script>
+            var socket = io.connect('<%= socket_io_addr %>');
+            console.log(socket);
+        </script>
+    </body>
 </html>

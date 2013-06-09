@@ -6,6 +6,7 @@
 
     var socketioModule = require('socket.io'),
         io = null,
+        clientPool = {};
 
         /* a utility for counting size of an object. */
         size = function (obj) {
@@ -18,7 +19,6 @@
             return count;
         },
 
-
         generateMAPSTART_DATA = function (opts) {
             return {
                 name: 'MAPSTART',
@@ -26,20 +26,37 @@
                 mapper: opts.mapper + '', // turn function to string
                 reducer: opts.reducer + ''
             };
+        },
+
+        generateREDUCE_DATA = function (opts) {
+            return {
+                name: 'REDUCE',
+                input: opts.input
+            };
+        },
+
+        generateMAP_ALL_END_DATA = function () {
+            return {
+                name: 'MAP_ALL_END'
+            };
+        },
+
+        generateCOMPLETE_DATA = function () {
+            return {
+                name: 'COMPLETE'
+            };
         };
 
     module.exports = {
-        test: function () {
-            console.log(socketioModule);
+        start: function () {
+            console.log('MAPSTART!!');
         },
 
-        start: function (httpServer) {
+        setup: function (httpServer) {
             io = socketioModule.listen(httpServer);
 
-            var clientPool = {};
-
             io.sockets.on('connection', function (socket) {
-                console.log('new connection in');
+
                 clientPool[socket.id] = {
                     id: socket.id
                 };

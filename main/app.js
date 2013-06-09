@@ -5,7 +5,7 @@
 
 var express = require('express'),
     routes = require('./routes'),
-    user = require('./routes/user'),
+    master = require('./routes/master'),
     http = require('http'),
     path = require('path'),
     mpModule = require('./JsMPModule');
@@ -29,11 +29,14 @@ app.configure('development', function () {
 });
 
 app.get('/', routes.index);
-app.get('/users', user.list);
+app.get('/master', master.master);
+app.post('/master', function (req, res) {
+    mpModule.start();
+}, master.start);
 
 var httpServer = http.createServer(app);
 
 httpServer.listen(app.get('port'), function () {
     console.log("Express server listening on port " + app.get('port'));
-    mpModule.start(httpServer);
+    mpModule.setup(httpServer);
 });
