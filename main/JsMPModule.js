@@ -74,6 +74,7 @@
         mapends = null,
         gotReduces = null,
         mapAllends = false,
+        reduceEnds = 0,
         running = false,
         checkMapAllEnd = function () {
             if (size(mapends) === numClients && !mapAllends) {
@@ -93,6 +94,7 @@
             mapends = {};
             gotReduces = {};
             mapAllends = false;
+            reduceEnds = 0;
 
             var i = 0;
 
@@ -163,13 +165,28 @@
                 // GOT_REDUCE
                 socket.on('GOT_REDUCE', function (data) {
                     gotReduces[socket.id].got ++;
+                    checkMapAllEnd();
                 });
 
                 // REDUCEEND
-                socket.on('REDUCEEND', function (data) {});
+                socket.on('REDUCEEND', function (data) {
+                    reduceEnds ++;
+                    if (reduceEnds === numClients) {
+                        io.sockets.emit('COMPLETE', generateCOMPLETE_DATA());
+                    }
+                });
 
                 // REDUCEDATA
-                socket.on('REDUCEDATA', function (data) {});
+                socket.on('REDUCEDATA', function (data) {
+                    var key = null,
+                        reducerOutput = data.data;
+                    for (key in reducerOutput) {
+                        if (reducerOutput.hasOwnProperty(key)) {
+                            console.log('reduced key: ' + key);
+                            console.log('value: ' + reducerOutput[key]);
+                        }
+                    }
+                });
 
 
             });
