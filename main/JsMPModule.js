@@ -23,9 +23,18 @@
             return {
                 name: 'MAPSTART',
                 input: opts.input,
-                mapper: opts.mapper + '', // turn function to string
-                reducer: opts.reducer + '',
-                emitter: opts.emitter + ''
+                mapper: {
+                    body: (opts.mapper.body + '').split(opts.mapper.header)[1], // turn function to string
+                    arguments: opts.mapper.arguments
+                },
+                reducer: {
+                    body: (opts.reducer.body + '').split(opts.reducer.header)[1],
+                    arguments: opts.reducer.arguments
+                },
+                emitter: {
+                    body: (opts.emitter.body + '').split(opts.emitter.header)[1],
+                    arguments: opts.emitter.arguments
+                }
             };
         },
 
@@ -42,9 +51,10 @@
             };
         },
 
-        generateCOMPLETE_DATA = function () {
+        generateCOMPLETE_DATA = function (opts) {
             return {
-                name: 'COMPLETE'
+                name: 'COMPLETE',
+                data: opts.data
             };
         },
 
@@ -76,6 +86,7 @@
         mapAllends = false,
         reduceEnds = 0,
         running = false,
+        result = {},
         checkMapAllEnd = function () {
             if (size(mapends) === numClients && !mapAllends) {
                 io.sockets.emit('MAP_ALL_END', generateMAP_ALL_END_DATA());
@@ -95,12 +106,12 @@
             gotReduces = {};
             mapAllends = false;
             reduceEnds = 0;
+            result = {};
 
             var i = 0;
 
-
             for (i; i < clientPool.length; i ++) {
-                io.clients[client.id].send('MAPSTART', generateMAPSTART_DATA({
+                clientPool[i].socket.emit('MAPSTART', generateMAPSTART_DATA({
                     input: input[i],
                     mapper: config.mapper,
                     reducer: config.reducer,
@@ -115,7 +126,8 @@
 
             io.sockets.on('connection', function (socket) {
                 var newClient = {
-                    id: socket.id
+                    id: socket.id,
+                    socket: socket
                 };
 
                 if (running) {
@@ -135,6 +147,9 @@
 
                 // MAPEND
                 socket.on('MAPEND', function (data) {
+                    console.log('\n\nonMAPEND');
+                    console.log(data);
+
                     mapends[socket.id] = 1;
                     if (gotReduces[socket.id].send === gotReduces[socket.id].got) {
                         checkMapAllEnd();
@@ -143,9 +158,13 @@
 
                 // MAPDATA
                 socket.on('MAPDATA', function (data) {
+                    console.log('\n\nonMAPDATA');
+                    console.log(data);
+
                     var mapperOutput = data.data,
                         key = null,
-                        clientID = null;
+                        clientSocket = null,
+                        input = null;
 
                     gotReduces[socket.id] = {
                         send: 0,
@@ -154,9 +173,11 @@
                     for (key in mapperOutput) {
                         if (mapperOutput.hasOwnProperty(key)) {
                             gotReduces[socket.id].send ++;
-                            clientID = bucket(key, clientPool).id;
-                            io.clients[clientID].send('REDUCE', generateREDUCE_DATA({
-                                input: mapperOutput[key]
+                            clientSocket = bucket(key, clientPool).socket;
+                            input = {};
+                            input[key] = mapperOutput[key];
+                            clientSocket.emit('REDUCE', generateREDUCE_DATA({
+                                input: input
                             }));
                         }
                     }
@@ -164,26 +185,38 @@
 
                 // GOT_REDUCE
                 socket.on('GOT_REDUCE', function (data) {
+                    console.log('\n\nonGOT_REDUCE');
+                    console.log(data);
+
                     gotReduces[socket.id].got ++;
                     checkMapAllEnd();
                 });
 
                 // REDUCEEND
                 socket.on('REDUCEEND', function (data) {
+                    console.log('\n\nonREDUCEEND');
+                    console.log(data);
+
                     reduceEnds ++;
                     if (reduceEnds === numClients) {
-                        io.sockets.emit('COMPLETE', generateCOMPLETE_DATA());
+                        io.sockets.emit('COMPLETE', generateCOMPLETE_DATA({
+                            data: result
+                        }));
                     }
                 });
 
                 // REDUCEDATA
                 socket.on('REDUCEDATA', function (data) {
+                    console.log('\n\nonREDUCEDATA');
+                    console.log(data);
+
                     var key = null,
                         reducerOutput = data.data;
                     for (key in reducerOutput) {
                         if (reducerOutput.hasOwnProperty(key)) {
                             console.log('reduced key: ' + key);
                             console.log('value: ' + reducerOutput[key]);
+                            result[key] = reducerOutput[key];
                         }
                     }
                 });

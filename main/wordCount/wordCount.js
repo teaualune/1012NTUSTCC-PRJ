@@ -4,20 +4,40 @@ module.exports = {
     name: 'Word Counter',
     inputDir: 'input',
     outputDir: 'output',
-    mapper: function (data, emit, output) {
-        var word = null,
-            words = data.split(' '); // split by space
-        for (word in words) {
-            emit(word, 1, output);
-        }
+    mapper: {
+        body: function (data, emit, output) {
+            var word = null,
+                words = data.split(' ');
+            for (word in words) {
+                emit(words[word], 1, output);
+            }
+        },
+        header: 'function (data, emit, output)',
+        arguments: ['data', 'emit', 'output']
     },
-    reducer: function (data, output) {
-        var key = null;
-        for (key in data) {
-            output[key] += parseInt(data[key], 10);
-        }
+    reducer: {
+        body: function (data, output) {
+            var key = null;
+            for (key in data) {
+                if (output[key]) {
+                    output[key] += parseInt(data[key], 10);
+                } else {
+                    output[key] = parseInt(data[key], 10);
+                }
+            }
+        },
+        header: 'function (data, output)',
+        arguments: ['data', 'output']
     },
-    emitter: function (key, value, mapperOutput) {
-        mapperOutput[key] += value;
+    emitter: {
+        body: function (key, value, mapperOutput) {
+            if (mapperOutput[key]) {
+                mapperOutput[key] += value;
+            } else {
+                mapperOutput[key] = 1;
+            }
+        },
+        header: 'function (key, value, mapperOutput)',
+        arguments: ['key', 'value', 'mapperOutput']
     }
 };
