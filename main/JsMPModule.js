@@ -46,9 +46,10 @@
             };
         },
 
-        generateMAP_ALL_END_DATA = function () {
+        generateMAP_ALL_END_DATA = function (opts) {
             return {
-                name: 'MAP_ALL_END'
+                name: 'MAP_ALL_END',
+                numOfReduces: opts.numOfReduces
             };
         },
 
@@ -85,17 +86,63 @@
     var numClients = 0,
         input = null,
         mapends = null,
-        gotReduces = null,
-        mapAllends = false,
+        gotReduces = function () {
+            var send,
+                got,
+                totalReduces,
+                callback = null,
+                check = function () {
+                    if (callback) {
+                        if (_.isEqual(send, got)) {
+                            var sendSum = _.reduce(_.values(send), function (memo, num) {
+                                    return memo + num;
+                                }, 0),
+                                gotSum = _.reduce(_.values(got), function (memo, num) {
+                                    return memo + num;
+                                }, 0);
+                            if (sendSum === gotSum) {
+                                callback();
+                            }
+                        }
+                    }
+                };
+            return {
+                init: function () {
+                    send = {};
+                    got = {};
+                    totalReduces = 0;
+                    callback = null;
+                },
+                appendSend: function (sid) {
+                    if (send[sid]) {
+                        send[sid] ++;
+                    } else {
+                        send[sid] = 1;
+                    }
+                },
+                appendGot: function (sid) {
+                    if (got[sid]) {
+                        got[sid] ++;
+                    } else {
+                        got[sid] = 1;
+                    }
+                    check();
+                },
+                addTotalReduces: function (n) {
+                    totalReduces += n;
+                },
+                listen: function (cb) {
+                    callback = cb;
+                    check();
+                },
+                numOfReduces: function (sid) {
+                    return got[sid];
+                }
+            };
+        },
         reduceEnds = 0,
         running = false,
-        result = {},
-        checkMapAllEnd = function () {
-            if (_.size(mapends) === numClients && !mapAllends) {
-                io.sockets.emit('MAP_ALL_END', generateMAP_ALL_END_DATA());
-                mapAllends = true;
-            }
-        };
+        result = {};
 
     module.exports = {
         start: function (config) {
@@ -106,8 +153,7 @@
             numClients = _.size(clientPool);
             input = fakeInput(numClients);
             mapends = {};
-            gotReduces = {};
-            mapAllends = false;
+            gotReduces().init();
             reduceEnds = 0;
             result = {};
 
@@ -156,13 +202,17 @@
                     console.log(data);
 
                     mapends[socket.id] = 1;
-                    if (gotReduces[socket.id].send === gotReduces[socket.id].got) {
-                        checkMapAllEnd();
+                    if (_.size(mapends) === numClients) {
+                        gotReduces().listen(function () {
+                            io.sockets.emit('MAP_ALL_END', generateMAP_ALL_END_DATA({
+                                numOfReduces: gotReduces().numOfReduces(socket.id);
+                            }));
+                        });
                     }
                 });
 
                 // MAPDATA
-                socket.on('MAPDATA', function (data) {
+                socket.on('MAPDATA', function (data, cb) {
                     console.log('\n\nonMAPDATA');
                     console.log(data);
 
@@ -171,30 +221,23 @@
                         clientSocket = null,
                         input = null;
 
-                    gotReduces[socket.id] = {
-                        send: 0,
-                        got: 0
-                    };
+                    gotReduces().addTotalReduces(_.size(mapperOutput));
+
                     for (key in mapperOutput) {
                         if (mapperOutput.hasOwnProperty(key)) {
-                            gotReduces[socket.id].send ++;
                             clientSocket = bucket(key, clientPool).socket;
+                            gotReduces().appendSend(clientSocket.id);
                             input = {};
                             input[key] = mapperOutput[key];
                             clientSocket.emit('REDUCE', generateREDUCE_DATA({
                                 input: input
-                            }));
+                            }), function (data) {
+                                gotReduces().appendGot(clientSocket.id);
+                            });
                         }
                     }
-                });
 
-                // GOT_REDUCE
-                socket.on('GOT_REDUCE', function (data) {
-                    console.log('\n\nonGOT_REDUCE');
-                    console.log(data);
-
-                    gotReduces[socket.id].got ++;
-                    checkMapAllEnd();
+                    cb(); // let client call MAPEND
                 });
 
                 // REDUCEEND
@@ -211,7 +254,7 @@
                 });
 
                 // REDUCEDATA
-                socket.on('REDUCEDATA', function (data) {
+                socket.on('REDUCEDATA', function (data, cb) {
                     console.log('\n\nonREDUCEDATA');
                     console.log(data);
 
@@ -224,8 +267,9 @@
                             result[key] = reducerOutput[key];
                         }
                     }
-                });
 
+                    cb();
+                });
 
             });
         }
