@@ -9,17 +9,6 @@
         io = null,
         clientPool = [],
 
-        /* a utility for counting size of an object. */
-        size = function (obj) {
-            var count = 0, key;
-            for (key in obj) {
-                if (obj.hasOwnProperty(key)) {
-                    count = count + 1;
-                }
-            }
-            return count;
-        },
-
         generateMAPSTART_DATA = function (opts) {
             return {
                 name: 'MAPSTART',
@@ -86,11 +75,11 @@
     var numClients = 0,
         input = null,
         mapends = null,
-        gotReduces = function () {
+        gotReduces = (function () {
             var send,
                 got,
-                totalReduces,
                 callback = null,
+                totalReduces = 0,
                 check = function () {
                     if (callback) {
                         if (_.isEqual(send, got)) {
@@ -136,24 +125,28 @@
                     check();
                 },
                 numOfReduces: function (sid) {
-                    return got[sid];
+                    var n = 0;
+                    if (got[sid]) {
+                        n = got[sid];
+                    }
+                    return n;
                 }
             };
-        },
+        }()),
         reduceEnds = 0,
         running = false,
         result = {};
 
     module.exports = {
         start: function (config) {
-            console.log('MAPREDUCE START!!')
+            console.log('MAPREDUCE START!!');
 
             // init module-scope MP variables
             running = true;
             numClients = _.size(clientPool);
             input = fakeInput(numClients);
             mapends = {};
-            gotReduces().init();
+            gotReduces.init();
             reduceEnds = 0;
             result = {};
 
@@ -203,10 +196,13 @@
 
                     mapends[socket.id] = 1;
                     if (_.size(mapends) === numClients) {
-                        gotReduces().listen(function () {
-                            io.sockets.emit('MAP_ALL_END', generateMAP_ALL_END_DATA({
-                                numOfReduces: gotReduces().numOfReduces(socket.id);
-                            }));
+                        gotReduces.listen(function () {
+                            var i = 0;
+                            for (i; i < clientPool.length; i ++) {
+                                clientPool[i].socket.emit('MAP_ALL_END', generateMAP_ALL_END_DATA({
+                                    numOfReduces: gotReduces.numOfReduces(clientPool[i].id)
+                                }));
+                            }
                         });
                     }
                 });
@@ -221,18 +217,18 @@
                         clientSocket = null,
                         input = null;
 
-                    gotReduces().addTotalReduces(_.size(mapperOutput));
+                    gotReduces.addTotalReduces(_.size(mapperOutput));
 
                     for (key in mapperOutput) {
                         if (mapperOutput.hasOwnProperty(key)) {
                             clientSocket = bucket(key, clientPool).socket;
-                            gotReduces().appendSend(clientSocket.id);
+                            gotReduces.appendSend(clientSocket.id);
                             input = {};
                             input[key] = mapperOutput[key];
                             clientSocket.emit('REDUCE', generateREDUCE_DATA({
                                 input: input
                             }), function (data) {
-                                gotReduces().appendGot(clientSocket.id);
+                                gotReduces.appendGot(clientSocket.id);
                             });
                         }
                     }
@@ -250,6 +246,8 @@
                         io.sockets.emit('COMPLETE', generateCOMPLETE_DATA({
                             data: result
                         }));
+                        console.log('\n\nCOMPLETE!');
+                        console.log(result);
                     }
                 });
 
