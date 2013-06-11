@@ -2,8 +2,8 @@
 
 module.exports = {
     name: 'Word Counter',
-    inputDir: 'input',
-    outputDir: 'output',
+    inputDir: 'wordCount/input',
+    outputDir: 'wordCount/output',
     mapper: {
         body: function (data, emit, output) {
             var word = null,

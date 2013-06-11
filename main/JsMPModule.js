@@ -68,6 +68,40 @@
             });
         },
 
+        readInput = function (inputDir, n, callback) {
+            var numChunks = 0,
+                ratio = 0,
+                i = 0,
+                j,
+                outerBuffer = null,
+                innerBuffer = null;
+
+            inputDir = './' + inputDir;
+
+            fs.readdir(inputDir, function (err, files) {
+                if (err) {
+                    throw err;
+                } else {
+                    numChunks = files.length;
+                    ratio = Math.ceil(numChunks / n); // average chunks per mapper
+                    for (i; i < n; i ++) {
+                        for (j = 0; j < ratio; j ++) {
+                            if (i * ratio + j < files.length) {
+                                innerBuffer = fs.readFileSync(inputDir + '/' + files[i * ratio + j], 'utf8');
+                                if (outerBuffer) {
+                                    outerBuffer = outerBuffer + innerBuffer;
+                                } else {
+                                    outerBuffer = innerBuffer;
+                                }
+                            }
+                        }
+                        callback(outerBuffer, i);
+                        outerBuffer = null;
+                    }
+                }
+            });
+        },
+
         bucket = function (key, pool) { // match the key to a pool
             // currently fake one
             if (pool.length < 2) {
@@ -151,7 +185,7 @@
 
     module.exports = {
         start: function (config) {
-            console.log('MAPREDUCE START!!');
+            console.log('MAPREDUCE START!! ' + config.name);
 
             // init module-scope MP variables
             running = true;
@@ -161,22 +195,14 @@
             reduceEnds = 0;
             result = {};
 
-            fakeInput(numClients, function (ipt) {
-                var i = 0;
-
-                input = ipt;
-
-                for (i; i < clientPool.length; i ++) {
-                    clientPool[i].socket.emit('MAPSTART', generateMAPSTART_DATA({
-                        input: input[i],
-                        mapper: config.mapper,
-                        reducer: config.reducer,
-                        emitter: config.emitter
-                    }));
-                }
-
+            readInput(config.inputDir, numClients, function (data, idx) {
+                clientPool[idx].socket.emit('MAPSTART', generateMAPSTART_DATA({
+                    input: data,
+                    mapper: config.mapper,
+                    reducer: config.reducer,
+                    emitter: config.emitter
+                }));
             });
-
         },
 
         setup: function (httpServer) {
