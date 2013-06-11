@@ -44,12 +44,15 @@ socket.on('MAPSTART', function (data) {
 
 //開始Reducer
 socket.on('REDUCE', function (data, cb) {
-    console.log('\n\nonREDUCE');
+    console.log('\n\nonREDUCE;');
     console.log(data);
 
 
     //socket.emit("GOT_REDUCE"); //告訴server已經收到reduce資料
-    cb('GOT_REDUCE');
+    cb({
+        name:'GOT_REDUCE',
+        socketID: socket.socket.sessionid
+    });
     var reduce_input = data.input;
     reducer(reduce_input, reduceOutput); //執行reducer
 

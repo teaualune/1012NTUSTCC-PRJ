@@ -6,6 +6,7 @@
 
     var socketioModule = require('socket.io'),
         _ = require('underscore'),
+        fs = require('fs'),
         io = null,
         clientPool = [],
 
@@ -49,13 +50,22 @@
             };
         },
 
-        fakeInput = function (n) {
+        fakeInput = function (n, callback) {
             var i = 0,
-                input = [];
-            for (i; i < n; i ++) {
-                input[i] = 'Hello World';
-            }
-            return input;
+                input = [],
+                filename = './wordCount/input/forwardRates.m',
+                filedata;
+            fs.readFile(filename, 'utf8', function (err, data) {
+                if (err) {
+                    filedata = 'Hello World';
+                } else {
+                    filedata = data;
+                }
+                for (i; i < n; i ++) {
+                    input[i] = filedata;
+                }
+                callback(input);
+            });
         },
 
         bucket = function (key, pool) { // match the key to a pool
@@ -82,6 +92,8 @@
                 totalReduces = 0,
                 check = function () {
                     if (callback) {
+                        console.log(send);
+                        console.log(got);
                         if (_.isEqual(send, got)) {
                             var sendSum = _.reduce(_.values(send), function (memo, num) {
                                     return memo + num;
@@ -144,22 +156,26 @@
             // init module-scope MP variables
             running = true;
             numClients = _.size(clientPool);
-            input = fakeInput(numClients);
             mapends = {};
             gotReduces.init();
             reduceEnds = 0;
             result = {};
 
-            var i = 0;
+            fakeInput(numClients, function (ipt) {
+                var i = 0;
 
-            for (i; i < clientPool.length; i ++) {
-                clientPool[i].socket.emit('MAPSTART', generateMAPSTART_DATA({
-                    input: input[i],
-                    mapper: config.mapper,
-                    reducer: config.reducer,
-                    emitter: config.emitter
-                }));
-            }
+                input = ipt;
+
+                for (i; i < clientPool.length; i ++) {
+                    clientPool[i].socket.emit('MAPSTART', generateMAPSTART_DATA({
+                        input: input[i],
+                        mapper: config.mapper,
+                        reducer: config.reducer,
+                        emitter: config.emitter
+                    }));
+                }
+
+            });
 
         },
 
@@ -192,10 +208,11 @@
                 // MAPEND
                 socket.on('MAPEND', function (data) {
                     console.log('\n\nonMAPEND');
-                    console.log(data);
+                    //console.log(data);
 
                     mapends[socket.id] = 1;
                     if (_.size(mapends) === numClients) {
+                        console.log('gotReduces listen');
                         gotReduces.listen(function () {
                             var i = 0;
                             for (i; i < clientPool.length; i ++) {
@@ -210,7 +227,7 @@
                 // MAPDATA
                 socket.on('MAPDATA', function (data, cb) {
                     console.log('\n\nonMAPDATA');
-                    console.log(data);
+                    //console.log(data);
 
                     var mapperOutput = data.data,
                         key = null,
@@ -228,7 +245,8 @@
                             clientSocket.emit('REDUCE', generateREDUCE_DATA({
                                 input: input
                             }), function (data) {
-                                gotReduces.appendGot(clientSocket.id);
+                                var trueClientSocketID = data.socketID;
+                                gotReduces.appendGot(trueClientSocketID);
                             });
                         }
                     }
@@ -239,7 +257,7 @@
                 // REDUCEEND
                 socket.on('REDUCEEND', function (data) {
                     console.log('\n\nonREDUCEEND');
-                    console.log(data);
+                    //console.log(data);
 
                     reduceEnds ++;
                     if (reduceEnds === numClients) {
@@ -254,7 +272,7 @@
                 // REDUCEDATA
                 socket.on('REDUCEDATA', function (data, cb) {
                     console.log('\n\nonREDUCEDATA');
-                    console.log(data);
+                    //console.log(data);
 
                     var key = null,
                         reducerOutput = data.data;

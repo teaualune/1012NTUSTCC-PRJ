@@ -7,7 +7,13 @@ module.exports = {
     mapper: {
         body: function (data, emit, output) {
             var word = null,
-                words = data.split(' ');
+                splitter = function (d) {
+                    var s = d.replace(/(^\s*)|(\s*$)/gi, '');
+                    s = s.replace(/[ ]{2,}/gi, ' ');
+                    s = s.replace(/\n /, '\n');
+                    return s.split(/[\s!-\/:-@\[-`{-~]+/);
+                },
+                words = splitter(data);
             for (word in words) {
                 emit(words[word], 1, output);
             }
