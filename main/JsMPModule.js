@@ -78,6 +78,7 @@
                     numChunks = files.length;
                     ratio = Math.ceil(numChunks / n); // average chunks per mapper
                     for (i; i < n; i ++) {
+                        outerBuffer = null;
                         for (j = 0; j < ratio; j ++) {
                             if (i * ratio + j < files.length) {
                                 innerBuffer = fs.readFileSync(inputDir + '/' + files[i * ratio + j], 'utf8');
@@ -88,8 +89,10 @@
                                 }
                             }
                         }
+                        if (!outerBuffer) {
+                            outerBuffer = '';
+                        }
                         callback(outerBuffer, i);
-                        outerBuffer = null;
                     }
                 }
             });
