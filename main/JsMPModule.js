@@ -7,8 +7,19 @@
     var socketioModule = require('socket.io'),
         _ = require('underscore'),
         fs = require('fs'),
+        util = require('util'),
         io = null,
         clientPool = [],
+
+        // _.each sucks!
+        each = function (obj, callback) {
+            var key = null;
+            for (key in obj) {
+                if (obj.hasOwnProperty(key)) {
+                    callback(key, obj[key]);
+                }
+            }
+        },
 
         generateMAPSTART_DATA = function (opts) {
             return {
@@ -80,6 +91,14 @@
                         callback(outerBuffer, i);
                         outerBuffer = null;
                     }
+                }
+            });
+        },
+
+        writeResult = function (outputDir, result) {
+            fs.writeFile('./' + outputDir + '/result.txt', util.format('%j', result), function (err) {
+                if (err) {
+                    console.log('write output error');
                 }
             });
         },
@@ -187,7 +206,8 @@
         }()),
         reduceEnds = 0,
         running = false,
-        result = {};
+        result = {},
+        outputDir = null;
 
     module.exports = {
         start: function (config) {
@@ -200,6 +220,7 @@
             gotReduces.init();
             reduceEnds = 0;
             result = {};
+            outputDir = config.outputDir;
 
             readInput(config.inputDir, numClients, function (data, idx) {
                 clientPool[idx].socket.emit('MAPSTART', generateMAPSTART_DATA({
@@ -259,7 +280,7 @@
                 // MAPDATA
                 socket.on('MAPDATA', function (data, cb) {
                     console.log('\n\nonMAPDATA');
-                    //console.log(data);
+                    console.log(data);
 
                     var mapperOutput = data.data,
                         key = null,
@@ -268,12 +289,13 @@
 
                     gotReduces.addTotalReduces(_.size(mapperOutput));
 
-                    _.each(mapperOutput, function (value, key) {
+                    each(mapperOutput, function (key, value) {
+                        console.log(key);
+                        console.log(value);
                         clientSocket = bucket(key, clientPool).socket;
                         gotReduces.appendSend(clientSocket.id);
-                        input = {
-                            key: value
-                        };
+                        input = {};
+                        input[key] = value;
                         clientSocket.emit('REDUCE', generateREDUCE_DATA({
                             input: input
                         }), function (data) {
@@ -297,6 +319,7 @@
                         }));
                         console.log('\n\nCOMPLETE!');
                         console.log(result);
+                        writeResult(outputDir, result);
                     }
                 });
 
@@ -306,7 +329,7 @@
                     //console.log(data);
 
                     var reducerOutput = data.data;
-                    _.each(reducerOutput, function (value, key) {
+                    each(reducerOutput, function (key, value) {
                         console.log('reduce key: ' + key);
                         console.log('value: ' + value);
                         result[key] = value;
@@ -318,5 +341,6 @@
             });
         }
     };
+
 
 }());
