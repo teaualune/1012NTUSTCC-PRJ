@@ -11,7 +11,7 @@ module.exports = {
                     var s = d.replace(/(^\s*)|(\s*$)/gi, '');
                     s = s.replace(/[ ]{2,}/gi, ' ');
                     s = s.replace(/\n /, '\n');
-                    return s.split(/[\s!-\/:-@\[-`{-~]+/);
+                    return s.split(/[\s!-\/:-@\[-`{-~\u0000-\u001F]+/);
                 },
                 words = splitter(data);
             for (word in words) {

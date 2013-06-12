@@ -1,4 +1,4 @@
-/*global module, require, console */
+/*global module, require, console, JSON */
 
 (function () {
 
@@ -7,7 +7,6 @@
     var socketioModule = require('socket.io'),
         _ = require('underscore'),
         fs = require('fs'),
-        util = require('util'),
         io = null,
         clientPool = [],
 
@@ -99,7 +98,9 @@
         },
 
         writeResult = function (outputDir, result) {
-            fs.writeFile('./' + outputDir + '/result.txt', util.format('%j', result), function (err) {
+            var resultString = JSON.stringify(result, null, 2); // indent = 2
+
+            fs.writeFile('./' + outputDir + '/result.txt', resultString, function (err) {
                 if (err) {
                     console.log('write output error');
                     console.log(err);
