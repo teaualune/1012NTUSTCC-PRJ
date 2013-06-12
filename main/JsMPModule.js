@@ -268,20 +268,19 @@
 
                     gotReduces.addTotalReduces(_.size(mapperOutput));
 
-                    for (key in mapperOutput) {
-                        if (mapperOutput.hasOwnProperty(key)) {
-                            clientSocket = bucket(key, clientPool).socket;
-                            gotReduces.appendSend(clientSocket.id);
-                            input = {};
-                            input[key] = mapperOutput[key];
-                            clientSocket.emit('REDUCE', generateREDUCE_DATA({
-                                input: input
-                            }), function (data) {
-                                var trueClientSocketID = data.socketID;
-                                gotReduces.appendGot(trueClientSocketID);
-                            });
-                        }
-                    }
+                    _.each(mapperOutput, function (value, key) {
+                        clientSocket = bucket(key, clientPool).socket;
+                        gotReduces.appendSend(clientSocket.id);
+                        input = {
+                            key: value
+                        };
+                        clientSocket.emit('REDUCE', generateREDUCE_DATA({
+                            input: input
+                        }), function (data) {
+                            var trueClientSocketID = data.socketID;
+                            gotReduces.appendGot(trueClientSocketID);
+                        });
+                    })
 
                     cb(); // let client call MAPEND
                 });
@@ -306,15 +305,12 @@
                     console.log('\n\nonREDUCEDATA');
                     //console.log(data);
 
-                    var key = null,
-                        reducerOutput = data.data;
-                    for (key in reducerOutput) {
-                        if (reducerOutput.hasOwnProperty(key)) {
-                            console.log('reduced key: ' + key);
-                            console.log('value: ' + reducerOutput[key]);
-                            result[key] = reducerOutput[key];
-                        }
-                    }
+                    var reducerOutput = data.data;
+                    _.each(reducerOutput, function (value, key) {
+                        console.log('reduce key: ' + key);
+                        console.log('value: ' + value);
+                        result[key] = value;
+                    });
 
                     cb();
                 });
