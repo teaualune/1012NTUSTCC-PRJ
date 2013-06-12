@@ -102,6 +102,7 @@
             fs.writeFile('./' + outputDir + '/result.txt', util.format('%j', result), function (err) {
                 if (err) {
                     console.log('write output error');
+                    console.log(err);
                 }
             });
         },
@@ -154,8 +155,6 @@
                 totalReduces = 0,
                 check = function () {
                     if (callback) {
-                        console.log(send);
-                        console.log(got);
                         if (_.isEqual(send, got)) {
                             var sendSum = _.reduce(_.values(send), function (memo, num) {
                                     return memo + num;
@@ -283,7 +282,7 @@
                 // MAPDATA
                 socket.on('MAPDATA', function (data, cb) {
                     console.log('\n\nonMAPDATA');
-                    console.log(data);
+                    // console.log(data);
 
                     var mapperOutput = data.data,
                         key = null,
@@ -293,8 +292,6 @@
                     gotReduces.addTotalReduces(_.size(mapperOutput));
 
                     each(mapperOutput, function (key, value) {
-                        console.log(key);
-                        console.log(value);
                         clientSocket = bucket(key, clientPool).socket;
                         gotReduces.appendSend(clientSocket.id);
                         input = {};
@@ -321,7 +318,7 @@
                             data: result
                         }));
                         console.log('\n\nCOMPLETE!');
-                        console.log(result);
+                        // console.log(result);
                         writeResult(outputDir, result);
                     }
                 });
@@ -333,8 +330,8 @@
 
                     var reducerOutput = data.data;
                     each(reducerOutput, function (key, value) {
-                        console.log('reduce key: ' + key);
-                        console.log('value: ' + value);
+                        // console.log('reduce key: ' + key);
+                        // console.log('value: ' + value);
                         result[key] = value;
                     });
 
