@@ -9,6 +9,7 @@
         fs = require('fs'),
         io = null,
         clientPool = [],
+        datasize = 0,
 
         // _.each sucks!
         each = function (obj, callback) {
@@ -81,6 +82,7 @@
                         for (j = 0; j < ratio; j ++) {
                             if (i * ratio + j < files.length) {
                                 innerBuffer = fs.readFileSync(inputDir + '/' + files[i * ratio + j], 'utf8');
+                                datasize += innerBuffer.length;
                                 if (outerBuffer) {
                                     outerBuffer = outerBuffer + innerBuffer;
                                 } else {
@@ -106,6 +108,13 @@
                     console.log(err);
                 }
             });
+        },
+
+        writeSummary = function (time, numClients, numKeys, datasize) {
+            console.log('Execution time: ' + time / 1000 + ' (s)');
+            console.log('Number of clients: ' + numClients);
+            console.log('Number of output keys: ' + numKeys);
+            console.log('Data size: ' + datasize + ' (bytes)')
         },
 
         bucket = (function () {
@@ -210,7 +219,9 @@
         reduceEnds = 0,
         running = false,
         result = {},
-        outputDir = null;
+        outputDir = null,
+        tic = 0,
+        toc = 0;
 
     module.exports = {
         start: function (config) {
@@ -224,6 +235,8 @@
             reduceEnds = 0;
             result = {};
             outputDir = config.outputDir;
+            tic = Date.now();
+            datasize = 0;
 
             readInput(config.inputDir, numClients, function (data, idx) {
                 clientPool[idx].socket.emit('MAPSTART', generateMAPSTART_DATA({
@@ -319,8 +332,10 @@
                             data: result
                         }));
                         console.log('\n\nCOMPLETE!');
+                        toc = Date.now();
                         // console.log(result);
                         writeResult(outputDir, result);
+                        writeSummary(toc - tic, numClients, _.keys(result).length, datasize); //time, numClients, numKeys
                     }
                 });
 
