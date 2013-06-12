@@ -50,24 +50,6 @@
             };
         },
 
-        fakeInput = function (n, callback) {
-            var i = 0,
-                input = [],
-                filename = './wordCount/input/forwardRates.m',
-                filedata;
-            fs.readFile(filename, 'utf8', function (err, data) {
-                if (err) {
-                    filedata = 'Hello World';
-                } else {
-                    filedata = data;
-                }
-                for (i; i < n; i ++) {
-                    input[i] = filedata;
-                }
-                callback(input);
-            });
-        },
-
         readInput = function (inputDir, n, callback) {
             var numChunks = 0,
                 ratio = 0,
@@ -102,16 +84,40 @@
             });
         },
 
-        bucket = function (key, pool) { // match the key to a pool
-            // currently fake one
-            if (pool.length < 2) {
-                return pool[0];
-            } else if (key[0] < 'm') {
-                return pool[0];
-            } else {
-                return pool[1];
-            }
-        };
+        bucket = (function () {
+            var keypool = {}, // key: socketID
+                i = 0;
+            return function (key, pool) {
+
+                // initialization
+                if (arguments.length === 0) {
+                    keypool = {};
+                    i = 0;
+                    return;
+                }
+
+                if (!_.has(keypool, key)) {
+                    keypool.key = pool[i].id;
+                    i = (i + 1) % pool.length;
+                }
+                var socket = _.filter(pool, function (s) {
+                    return s.id === keypool.key;
+                });
+                return socket[0];
+            };
+        }());
+        bucket();
+
+        // bucket = function (key, pool) { // match the key to a pool
+        //     // currently fake one
+        //     if (pool.length < 2) {
+        //         return pool[0];
+        //     } else if (key[0] < 'm') {
+        //         return pool[0];
+        //     } else {
+        //         return pool[1];
+        //     }
+        // };
 
 
 
