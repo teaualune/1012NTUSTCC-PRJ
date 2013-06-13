@@ -56,3 +56,6 @@ node_modules
 
 # MapReduce outputs
 output
+
+# large dataset
+dataset
