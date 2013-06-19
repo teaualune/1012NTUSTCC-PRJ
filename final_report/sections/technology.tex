@@ -1,33 +1,25 @@
 \section{Technologies and Open Source Projects}
 
-In order to achieve our motivations, it is necessary to give a brief survey first to check how other projects implement the similar goal, and compare differences with our approach.
-The survey result can be categorized into two parts: \emph{MapReduce-like implementation} and \emph{javascript libraries and techniques}. For the first part, we try to look especially into MapReduce-like projects that is implemented in javascript.
+After several surveys, we implement the system with some open source projects from the survey result. Here we describe the technologies and open source projects that are used in our project:
 
 \begin{enumerate}
-%
-% \item Hadoop:
-%   One of the most famous MapReduce implementation
-
-\item Atomize.js\cite{atomizejs}:
-  It is amied to provide distributed objects and atomic transaction feature between the server and all clients. The clients register to server and read/write variables with server; Atomize.js ensures that the variable is treated as "global" and identical among all clients. The descriptive sample given by authors of Atomize.js is a simple online game that uses atomic feature to manage game states. For client-server connection it uses SockJS library introduced below.
-
-\item MapRejuice\cite{maprejuice}:
-  MapRejuice is a simple implementation on MapReduce algorithm. It builds a web server that delievers javascript contents and use RESTful API as entrances for receiving outputs of map and reduce functions.
-  It uses Socket.io for client-server connection.
-
-\item WebWorker\cite{webworker}:
-  WebWorker, a.k.a. Web Worker API, is the well-known feature that comes to new browsers with HTML5 standards. Specified by W3C, the objective of WebWorker is to provide concurrent programming in browsers; therefore heavy-loaded scripts can be executed in the worker thread and it does not block the main thread of browser, which leads to no-response feels to users.
-  In our approach, it is natural to execute map and reduce functions on a worker thread in order to speed up performance in the browser.
 
 \item WebSocket\cite{websocket}:
-  Similar to WebWorker, it is included in the HTML5 standard. As the name shows, WebSocket provides socket programming functionalities to browsers, which traditionally rely on HTTP protocol communication.
-  WebSocket is more suitable for modern web use cases because while HTTP protocol is stateless and disconnects after response sent/received, WebSocket can create a tunnel between the server and browsers to exchange information rapidly and simutaneously.
-  Again it is natural for our project to use WebSocket as data exchange.
+  The WebSocket technology is included in the HTML5 standard. It provides interfaces that enable socket programming functionality to browsers.
+  WebSocket is more suitable for modern web use cases; while HTTP protocol is stateless and disconnects after response sent/received, WebSocket can create a tunnel between the server and browsers to exchange information rapidly and simutaneously.
+  For our project, it is natural to use the mechanism for data exchange. But since WebSocket does not support older browsers and it has unfriendly APIs, we use Socket.io, an open source library that solves these problems.
 
 \item Socket.io\cite{socketio}:
   Although WebSocket provides socket-connection abilities to browsers, it currently has only plain API and unable to support old browsers. Socket.io tries to solve these problems with easy-to-use interfaces that wrap WebSocket APIs and use Ajax instead of WebSocket when older browser is detected.
 
-\item SockJS\cite{sockjs}:
-  It is a wrapper to WebSocket. When SockJS detects that the browser is too old to provide WebSocket functionality, it uses other methods (e.g. Ajax) to emulate socket instead. This is very similar to Socket.io, which is more popular. They both have browser/server side implementation.
+  The interface of Socket.io is purely event-driven and message-passing. To interact with each other, the sender emits a message with a specified name and the message body; and the receiver must register an event listener with the name to catch the message.
+
+  Moreover, Socket.io gives programmers several additional useful abilities. The most important ability that benefits our project a lot is the callback mechanism: when the receiver gets the message, it can notify the sender that the message has been received via a callback function. For convenience, we call the mechanism as \emph{handshaking} in the following sections. 
+
+\item Underscore.js\cite{sockjs}:
+  Underscore.js is a javascript utility library that provides various features not included in the original language, e.g. object iterator, splitter, comparison, etc. Some parts of the program are benefit from the help of it.
+
+\item Express:
+  Express is a web application framework that makes Node.js more easy to provide webpage contents as well as server-side routing and flow control. We use Express to build the two webpages and trigger the MapReduce program.
 
 \end{enumerate}
