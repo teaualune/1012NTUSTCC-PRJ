@@ -1,11 +1,15 @@
 \section{Motivation}
 
-MapReduce\cite{mapreduce} provides a distributed way for processing large-scale data. In traditional MapReduce implementations, a server node dispatches data and tasks to various client nodes and collect results after mapper and reducer functions are done by clients. Both server and client need efforts to configure connection and execution environment for MapReduce programs.
+MapReduce\cite{mapreduce} provides a distributed way for large-scale data processing. In the traditional MapReduce model, a server node dispatches data and tasks to various client nodes and collect results after mapper and reducer functions are done by clients. Both the server and clients need efforts to configure on connection and execution environment for MapReduce programs.
 
-In order to get many clients in a more convenient way, we introduce a new kind of MapReduce client, i.e. browsers. In the initial scheme, researchers who need more computing resources do not necessary set up lots of clients; instead, they can use a HTTP server that establishes connection with clients visit the researchers’ website (server).
-Data, mappers and reducers can therefore dispatch to those browsers and execute. To support a research, a resource provider only need to keep a browser opened and connected to the server.
+In order to get many clients in a more convenient way, we introduce a new kind of client, i.e. browsers.
+In the initial scheme of our idea, researchers who need more computing resources do not need to set up lots of clients; instead, they can use a HTTP server that establishes connection with clients who visit the website (server).
+Data, mappers and reducers can therefore dispatch to those browsers and execute.
+To support a research, a resource provider only needs to keep a browser open and connected to the server.
 
-Due to cross-browser communication is impossible because WebRTC\cite{webRTC} have not been supported by most of browsers' stable versions, so intermediate data have to come back to server. This will become a bottleneck.
-And because the server-browser communication via HTTP, the interaction between server and clients is much slower than in clusters. Browser is also not a fast execution environment. These challenges should be considerd.
+Due to the lack of cross-browser communication mechanism in the current HTML standard, the intermediate data have to send back to the server and then dispatch to clients again. This will become a bottleneck.
 
-Browser is not a fast execution environment. In the future, we can extend the functionality more by enabling other node.js\cite{nodejs} applications to become clients; thus researchers who are doubt for the speed of browser computing can set up client machines with node.js and libraries we provided.
+And because the server and browsers communicate via HTTP protocol, the interaction between the server and clients is much slower than in clusters.
+Also the browser is not a fast execution environment. These challenges should be considerd during implementation.
+
+We can extend the functionality by enabling other Node.js applications to become clients; thus researchers who are doubt for the speed of browser computing can set up client machines with node.js and libraries we provided.

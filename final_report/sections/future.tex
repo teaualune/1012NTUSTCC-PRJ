@@ -1,9 +1,10 @@
 \section{Future Works}
 
-Fault tolerance is the biggest unsolved problem in this project. Mapreduce needs a lot of data transmitions. If one connection failed, the all task may break. It is normal for a client disconnects, so fault tolerance should be carefully considered. But now we are unable to come up a good solution for this issue.
+Fault tolerance is the biggest unsolved issue in the project. MapReduce needs a lot of data transmitions. If one connection node failed, the whole algorithm may break.
+What's worse, it is normal for a client disconnects from the server, so fault tolerance should be carefully considered; but now we are unable to come up a good solution for this issue.
 
-Benchmark is another issue. Our model is hard to evaluate and compare the performance. Our model needs different benchmarks from traditional Mapreduce model, and is unsuitable to compare with traditional model which is running inside clusters.
+For benchmark and evaluation, our model is hard to evaluate and do performance comparison. Our system needs different benchmarks from traditional MapReduce model, and is unsuitable to compare with traditional models.
 
-Peer-to-peer communication is needed to transmit the intermediate data between mapper workers and reducer workers. WebRTC will be implemented by most of the browsers in the future, which is a solution to enable browser-to-browser P2P data sharing to transmit intermediate mapper data to reducers.
+Peer-to-peer (P2P) communication is needed to transmit the intermediate data between mappers and reducers. WebRTC\cite{webRTC} will be implemented by most of the browsers in the future, which is a solution to enable browser-to-browser data exchange.
 
-For researchers who are doubt for the speed of browser computing, we can provide a Node.js application as a client. And we have not implemented with WebWorker\cite{webworker} in browser client. With WebWorker, if mapper and reducer tasks are heavy, they can be executed on the worker thread, but the memory issue is hard to solve so currently it is not implemented.
+In the original idea the mappers and reducers are excuted via WebWorker\cite{webworker}, which provides multi-threading javascript execution functionality in browsers. If mapper and reducer tasks are heavy, they can be executed on the worker thread, but the data synchronization issue between main thread and worker thread is hard to solve so currently it is not implemented in the project.
