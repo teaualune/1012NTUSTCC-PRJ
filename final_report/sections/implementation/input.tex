@@ -1,0 +1,5 @@
+\subsection{Input Reader at a Glance}
+
+Node.js provides File System module that lets programmers read and write on the file system of the server. We use it to read input data. Again, due to the nonblocking I/O nature of Node.js ,there are two types of reading files and directory - synchronous and asynchronous versions.
+
+To use the File System module, simply writes \texttt{ var fs = require('fs'); } to retrieve the module. We use the asynchronous version of reading directory, \texttt{ fs.readDir() }; for reading files, however, we use the synchronous version \texttt{ fs.readFileSync() } which blocks the execution of the server until the file is read.
