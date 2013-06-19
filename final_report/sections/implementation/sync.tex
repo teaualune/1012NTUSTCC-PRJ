@@ -14,8 +14,50 @@ Among the whole program, we use event listener to catch messages; but the mechan
 
 In this section we describe solutions that solves each issue.
 
-\subsubsection{MAPDATA and MAPEND ordering}
+\subsubsection{MAPDATA and MAPEND Ordering}
 
-\subsubsection{REDUCE and MAP\_ALL\_END ordering}
+To ensure the MAPDATA message is handled by the server before receiving the MAPEND message, we use the handshaking mechanism provided by Socket.io to enforce the message order:
 
-\subsubsection{REDUCE event listener problem}
+\begin{verbatim}
+socket.emit('MAPDATA', {
+    data: mapperOutput
+}, function () {
+    socket.emit('MAPEND', {
+        keys: _.keys(mapperOutput)
+    });
+});
+\end{verbatim}
+
+The code snippet comes from the client side javascript. When the MAPDATA message is received by the server, it first shuffles the \texttt{mapperOutput} to reducers, and then calls the callback function, i.e. the second input argument of \texttt{socket.emit()}.
+
+This mechanism is also adopted in the case of REDUCEDATA and REDUCEEND messages ordering.
+
+\subsubsection{REDUCE and MAP\_ALL\_END Ordering}
+
+As described in the API section, the MAP\_ALL\_END message should be sent when
+
+(1) the server receives all MAPEND messages;
+
+(2) the server knows that all REDUCE messages has been received.
+
+For (1) the server simply uses a counter to record the number of incoming MAPEND messages and detect whether the number of the counter equals the number of clients.
+
+For (2) we propose a counting scheme that counts before and after the REDUCE message sending.
+In the configuration step we initialize two objects \texttt{send} and \texttt{got}, and another object \texttt{reduce} that contains the two objects as properties.
+
+Before the server sends the REDUCE message to client x, let \texttt{reduce.send[x]} increase by 1 (if \texttt{reduce.send[x]} is undefined then set the value to 1).
+After the client receives the message, it uses the handshaking mechanism to notify the server; the server then increases \texttt{reduce.got[x]} by 1.
+
+On another side, when the server receives all MAPEND messages it immediately knows how many REDUCE messages will be sent in total. We call the value N. Therefore, when the server collects all MAPEND messages, \texttt{reduce} object starts to observe two events:
+
+a. \texttt{reduce.send} is identical to \texttt{reduce.got}, i.e. they have identical keys and their corresponding values are all equal to each other;
+
+b. the total values in \texttt{reduce.got} equals to N.
+
+Upon the two events occured, the server can send the MAP\_ALL\_END message. By using these counting techniques, we can ensure that the MAP\_ALL\_END message is sent after all REDUCE messages are received by clients.
+
+\subsubsection{REDUCE Event Listener Problem}
+
+Recall the \texttt{reduce.got} object above. When the two conditions are matched, \texttt{reduce.got[x]} represents the number of REDUCE messages sent to the client x.
+
+So the problem is easy to solve by using \texttt{reduce.got} well; we put \texttt{reduce.got[x]} in the message boy of the MAP\_ALL\_END message toward client x. Upon receiving the message, client x knows the number of REDUCE messages that it will got; therefore, it can send the REDUCEDATA message when all reducer tasks are done by simple counting.
