@@ -1,1 +1,36 @@
 \subsection{API Specification}
+
+Socket.io uses message-passing mechanism to communicate and send/receive data. Different types of messages are identified via its message name; therefore we build a set of message types that is used as APIs that help the server and clients interact between each other.
+
+Here shows the complete list of APIs:
+
+\begin{center}
+
+\begin{tabular}{| l | l | p{7cm} |}
+
+\hline
+API name & Direction & Description \\
+\hline
+MAPSTART & Server to client & The server sends split data, mapper, emitter and reducer functions to the client and tells the client to start mapper task. \newline
+Note that the mapper, emitter and reducer in the message body are just plain strings, but can be translated back to functions. \newline
+The emitter will be executed inside the mapper function in order to summarize the outputs by the mapper. \\
+\hline
+MAPDATA & Client to Server & The client sends the mapper output to the server. \newline
+Upon receiving MAPDATA, the server will use handshaking to notify the client, which will then emits the MAPEND message. \\
+\hline
+MAPEND & Client to Server & mapend \\
+\hline
+MAP\_ALL\_END & Server to Client & map all end \\
+\hline
+REDUCE & Server to Client & reduce \\
+\hline
+REDUCEDATA & Client to Server & reduce data \\
+\hline
+REDUCEEND & Client to Server & reduce end \\
+\hline
+COMPLETE & Server to Client & complete \\
+\hline
+
+\end{tabular}
+
+\end{center}
