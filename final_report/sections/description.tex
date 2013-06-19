@@ -1,11 +1,9 @@
 \section{Project Description}
 
-The project implements a basic structure of the MapReduce programming model. The master server is written in Node.js with Express
+The project implements a basic structure of the MapReduce programming model. The master server is written in Node.js with Express framework, which helps faster developing on Node.js; the webpage delievered by the server is treated as the client nodes. The core of the mapReduce algorithm, altogether with utilities like input reader and output writer, are written as a Node.js module that is used by Express.
 
-This library runs a program using MapReduce programming model on the server and dispatch mapper/reducer tasks to many registered client browsers program.
+To register as a computing node, clients visit the site hosted by the server and a socket connection will be established. The client then becomes a node a waits for incoming requests.
 
-To register, clients visit a site hosted by the server and accept worker permissions. Javascripts of the site will create several HTML5 workers. They will be mappers or reducers (a browser client may has mapper and reducer workers concurrently), waiting for dispatching tasks and data from the server. Upon receiving works, the workers become active, execute the map/reduce works, return results back after finsihing execution repeatly.
+To start the MapReduce program, administrators visit another master page on the server and click the Start button on the page. The server will then start to read input, dispatch tasks and wait for result and write to output directory.
 
-Different with the traditional MapReduce model, we can’t communicate between browsers since the standard of communication between browsers is not popular in this time, so the the intermediate result done by map workers will be report to theselves, and then shuffle these intermediate results to the reduce workers.
-
-Also there will be an API for node.js that provides adapters connecting server-side javascripts and node.js computing environment. Eventually the server can also dispatch tasks to node.js servers, i.e. treating node.js as a powerful MapReduce computing nodes.
+Different with the traditional MapReduce model, we can’t directly communicate between browsers, so the the intermediate result done by map workers will be sent to the server fist, and then shuffle these intermediate results to the reducers.
