@@ -1,14 +1,17 @@
-\subsection{Part I: Master Server}
+\subsection{Master Server}
 
 The master server does two major works:
+
 (1) provide web content delievered to browsers, and
+
 (2) control the whole MapReduce algorithm process.
+
 We discuss them separately.
 
 \begin{enumerate}
 
 \item Web Content Delievering\\
-The node.js server creates a HTTP server object and listens for HTTP GET requests.
+The node.js server creates a HTTP server object and listens for HTTP GET requests for root path.
 Upon recieving requests, the HTTP server object sends web content back via HTTP response.
 
 The web content contains the following parts:
@@ -21,17 +24,13 @@ The web content contains the following parts:
 \item Other assets files.
 
 \end{itemize}
-Details of the HTML content and browser-side javascript program will be discussed in Part II.
+Details of the HTML content and browser-side javascript program will be discussed in the next section.
+
+There is another webpage on /master path that plays as a role of MapReduce algorithm trigger.
 
 \item MapReduce Algorithm Process Control\\
 The server begins the algorithm by firstly dispatches split data, map function and reduce function to registered clients.
 
-In theory after all data are sent, the dispatch process is done and the server starts the shuffle process; but since node.js has a non-blocking I/O characteristic, the server runs the shuffle process in a callback which is called when map function returns the results.
-
-For the shuffle process, the server first marks the returning client as \emph{MAPEND} state; second, for each key-value data from mapper, it uses bucketing algorithms (described below) to decide which reducer should the key go. Finally it dispatches the key-value data to that reducer.
-
-Upon all the clients are marked as \emph{MAPEND}, the server knows that all initial data are mapped to key-value data, so it sends \emph{END} signal to every reducer.
-
-Finally, a callback awaits: when the reducer returns key-value data back, the server calls the collect process that writes the data to user-defined output location e.g. database or static files.
+Due to the non-blocking I/O and event-driven characteristic of Node.js, the following processes are not execute after the data are dispatched; instead, we let the server listens to several messages that each represents a part of the algorithm, such as \emph{MAPDATA} (in order to receive mapper output), \emph{REDUCEDATA}, etc. The messages are treated as APIs and will be discussed later.
 
 \end{enumerate}

@@ -16,7 +16,7 @@ While designing the MapReduce model for the server-browser architecuture, we com
 
 \item \emph{Reduce}. Upon receiving key-value data, clients run the reduce function to sum up values of the key. The data does not come at the same time so the reducer will wait for a signal referring to the end of the execution.
 
-\item \emph{Signal}. When master receives and re-dispatches all data from every map functions, it sends MAP_ALL_END signal to all clients, telling them there is no further inputs and thus reducers can upload the result.
+\item \emph{Signal}. When master receives and re-dispatches all data from every map functions, it sends \emph{MAP_ALL_END} signal to all clients, telling them there is no further inputs and thus reducers can upload the result.
 
 \item \emph{Collect}. After the client sends the final key-value result back to master server, the data will be written to the output directory. A brief summary will be shown indicating execution time, number of keys, number of clients, etc.
 
