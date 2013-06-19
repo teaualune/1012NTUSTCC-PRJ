@@ -1,5 +1,7 @@
 \section{Project Description}
 
+The project implements a basic structure of the MapReduce programming model. The master server is written in Node.js with Express
+
 This library runs a program using MapReduce programming model on the server and dispatch mapper/reducer tasks to many registered client browsers program.
 
 To register, clients visit a site hosted by the server and accept worker permissions. Javascripts of the site will create several HTML5 workers. They will be mappers or reducers (a browser client may has mapper and reducer workers concurrently), waiting for dispatching tasks and data from the server. Upon receiving works, the workers become active, execute the map/reduce works, return results back after finsihing execution repeatly.
