@@ -4,6 +4,9 @@ After several surveys, we implement the system with some open source projects fr
 
 \begin{enumerate}
 
+\item Node.js:
+  Node.js is a server-side software system that aims to be a basis of scalable Internet applications; built on V8\cite{v8} javascript engine developed by Google, it has an event-driven and non-blocking I/O nature. Since it is written in javascript, we use it to develop server-side program in order to provide a homogeneous environment between server and clients.
+
 \item WebSocket\cite{websocket}:
   The WebSocket technology is included in the HTML5 standard. It provides interfaces that enable socket programming functionality to browsers.
   WebSocket is more suitable for modern web use cases; while HTTP protocol is stateless and disconnects after response sent/received, WebSocket can create a tunnel between the server and browsers to exchange information rapidly and simutaneously.
@@ -16,10 +19,10 @@ After several surveys, we implement the system with some open source projects fr
 
   Moreover, Socket.io gives programmers several additional useful abilities. The most important ability that benefits our project a lot is the callback mechanism: when the receiver gets the message, it can notify the sender that the message has been received via a callback function. For convenience, we call the mechanism as \emph{handshaking} in the following sections. 
 
-\item Underscore.js\cite{sockjs}:
+\item Underscore.js\cite{underscorejs}:
   Underscore.js is a javascript utility library that provides various features not included in the original language, e.g. object iterator, splitter, comparison, etc. Some parts of the program are benefit from the help of it.
 
-\item Express:
+\item Express\cite{express}:
   Express is a web application framework that makes Node.js more easy to provide webpage contents as well as server-side routing and flow control. We use Express to build the two webpages and trigger the MapReduce program.
 
 \end{enumerate}

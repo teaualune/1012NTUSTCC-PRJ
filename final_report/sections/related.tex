@@ -1,1 +1,10 @@
 \section{Related Works}
+
+\emph{MapReduce}\cite{mapreduce} proposes the original idea of the MapReduce programming model; our project tries to imitate the execution flow described in the paper.
+
+\emph{Atomize.js}\cite{atomizejs} provides a distributed object and atomic transactions on it.
+Although not related to MapReduce, it uses SockJS\cite{sockjs}, which is similar to Socket.io, to send and receive messages.
+Some of the API specification of our project is inspired from this project.
+
+\emph{MapRejuice}\cite{maprejuice} is a simple implementation of the MapReduce algorithm on server-browser, which is similar to our design; it uses several RESTful APIs as the entrance of mapper and reducer, e.g. \texttt{/map} and \texttt{/reduce}.
+Our project provides more functionality and flexibility, comparing to MapRejuice; also we use Socket.io to exchange data instead of URL redirection in MapRejuice model.
