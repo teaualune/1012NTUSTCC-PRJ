@@ -1,0 +1,23 @@
+\subsection{Execution Overview}
+
+While designing the MapReduce model for the server-browser architecuture, we compromise for some additional steps (\emph{configuration}, \emph{signal} and \emph{collect}) and efforts (in \emph{split}, \emph{shuffle} and \emph{reduce}) to the original model due to some constraints of our architecture.
+
+\begin{enumerate}
+
+\item \emph{Configuration}. User sets up some properties of the execution flow, e.g. data split strategy (see below).
+
+\item \emph{Split}. Master server split data into multiple chunks. By how configuration varies the system either splits data as fixed size, or dynamically determines number of clients and splits data to the same number. The data is split into M chunks.
+
+\item \emph{Dispatch}. Master server dispatch M chunks to M clients, as well as the map functions and reduce functions.
+
+\item \emph{Map}. The map functions take individual chunk as input, and output a set of key-value data corresponding to the chunk. Since we are using javascript the key-value data can be easy represented as a javascript object or a JSON.
+
+\item \emph{Shuffle}. Clients return the map results via WebSocket, and master server immediately send it to different clients by sending different key-value data to client reducer that corresponds to the key.
+
+\item \emph{Reduce}. Upon receiving key-value data, clients run reduce function to summing up values of the key. The data does not come at the same time so the reducer will wait for a signal referring to the end of execution.
+
+\item \emph{Signal}. When master receives and re-dispatches all data from every map functions, it sends END signal to all reducer clients, telling them there is no further inputs and thus reducers can terminate the process.
+
+\item \emph{Collect}. After reduce function is terminated, the client sends the final key-value result back to master server, which collects them and writes to the final output.
+
+\end{enumerate}
