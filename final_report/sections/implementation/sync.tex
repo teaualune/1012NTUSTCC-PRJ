@@ -1,1 +1,21 @@
 \subsection{Data Synchronization Problems}
+
+Among the whole program, we use event listener to catch messages; but the mechanism is difficult for flow control especially when there are synchronization problems. For our MapReduce model, there are 3 tricky parts that needs to take care of:
+
+\begin{enumerate}
+
+\item If the MAPEND message sent by a client is received by the server before the MAPDATA message sent by the client is received, the data in MAPDATA message might be ignored by the server.
+
+\item If the MAP\_ALL\_END message is received before any REDUCE messages received by clients, the data in REDUCE message might be ignored by the client.
+
+\item Clients do not know how many REDUCE messages will be received, so we need a mechanism that notifies the client to stop listening to new REDUCE messages and start to upload the result.
+
+\end{enumerate}
+
+In this section we describe solutions that solves each issue.
+
+\subsubsection{MAPDATA and MAPEND ordering}
+
+\subsubsection{REDUCE and MAP\_ALL\_END ordering}
+
+\subsubsection{REDUCE event listener problem}
