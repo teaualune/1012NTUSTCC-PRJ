@@ -1,1 +1,9 @@
 \section{Future Works}
+
+Fault tolerance is the biggest unsolved problem in this project. Mapreduce needs a lot of data transmitions. If one connection failed, the all task may break. It is normal for a client disconnects, so fault tolerance should be carefully considered. But now we are unable to come up a good solution for this issue.
+
+Benchmark is another issue. Our model is hard to evaluate and compare the performance. Our model needs different benchmarks from traditional Mapreduce model, and is unsuitable to compare with traditional model which is running inside clusters.
+
+Peer-to-peer communication is needed to transmit the intermediate data between mapper workers and reducer workers. WebRTC will be implemented by most of the browsers in the future, which is a solution to enable browser-to-browser P2P data sharing to transmit intermediate mapper data to reducers.
+
+For researchers who are doubt for the speed of browser computing, we can provide a Node.js application as a client. And we have not implemented with WebWorker\cite{webworker} in browser client. With WebWorker, if mapper and reducer tasks are heavy, they can be executed on the worker thread, but the memory issue is hard to solve so currently it is not implemented.
